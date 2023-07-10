@@ -1,13 +1,88 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Webpack</title>
+		<title>Books shop</title>
+		<script src="https://kit.fontawesome.com/39bbe9b596.js" crossorigin="anonymous"></script>
 	</head>
 	<body>
-		<h1>Bye</h1>
-		<main>Hello bro</main>
-		<footer>Hahaha</footer>
+		<header class="header">
+			<div class="container">
+				<div class="header__inner">
+					<div class="header-logo">Bookshop</div>
+					<nav class="header-nav">
+						<a class="active" href="#">Books</a>
+						<a href="#">Audiobooks</a>
+						<a href="#">Stationery & gifts</a>
+						<a href="#">Blog</a>
+					</nav>
+					<div class="header-add-menu">
+						<i title="User profile" class="fa-regular fa-user"></i>
+						<i title="Search" class="fa-solid fa-magnifying-glass"></i>
+						<div title="Your items in the cart" class="add-menu-bag">
+							<i class="fa-solid fa-basket-shopping"></i>
+							<span id="cartItemsCount" class="items-count">0</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- /.container -->
+		</header>
+		<!-- /.header -->
+		<main class="intro">
+			<div class="container">
+				<div class="intro__inner">
+					<div class="slide-block">
+						<a class="slide-link" id="slideURL" href="">
+							<img id="slide" class="slide-image" src="./img/banner1.png" alt="slide" />
+						</a>
+						<div class="slider-dots">
+							<i id="dot1" class="fa-solid fa-circle active"></i>
+							<i id="dot2" class="fa-solid fa-circle"></i>
+							<i id="dot3" class="fa-solid fa-circle"></i>
+						</div>
+					</div>
+					<div class="cards-block">
+						<a class="card-item card-item-1">
+							<p class="card-text">Change<br />old book<br />on new</p>
+							<i class="fa-solid fa-arrow-right-long"></i>
+						</a>
+						<a class="card-item card-item-2">
+							<p class="card-text">Top<br />100<br />books<br />2022</p>
+							<i class="fa-solid fa-arrow-right-long"></i>
+						</a>
+					</div>
+				</div>
+			</div>
+			<!-- /.container -->
+		</main>
+		<!-- /.intro -->
+		<section class="books">
+			<div class="container">
+				<div class="books__inner">
+					<div class="books-nav">
+						<a href="#">Architecture</a>
+						<a href="#">Art & Fashion</a>
+						<a href="#">Biography</a>
+						<a href="#">Business</a>
+						<a href="#">Crafts & Hobbies</a>
+						<a href="#">Drama</a>
+						<a href="#">Fiction</a>
+						<a href="#">Food & Drink</a>
+						<a href="#">Health & Wellbeing</a>
+						<a href="#">History & Politics</a>
+						<a href="#">Humor</a>
+						<a href="#">Poetry</a>
+						<a href="#">Psychology</a>
+						<a href="#">Science</a>
+						<a href="#">Technology</a>
+						<a href="#">Travel & Maps</a>
+					</div>
+				</div>
+			</div>
+			<!-- /.container -->
+		</section>
+		<!-- /.books -->
 	</body>
 </html>

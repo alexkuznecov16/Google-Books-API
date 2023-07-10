@@ -8,22 +8,44 @@
     "start": "webpack serve",
     "build-dev": "webpack",
     "build-prod": "webpack --node-env=production",
-    "clear": "rd /s /q dist"
+    "clear": "rd /s /q dist",
+    "lint": "eslint --fix ./src"
   },
   "keywords": [],
-  "author": "",
+  "author": "Alexander Kuznecov",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.22.8",
+    "@babel/preset-env": "^7.22.7",
+    "babel-loader": "^8.0.6",
+    "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.8.1",
+    "css-minimizer-webpack-plugin": "^5.0.1",
+    "eslint": "^8.44.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-webpack-plugin": "^4.0.1",
     "html-loader": "^4.2.0",
     "html-webpack-plugin": "^5.5.3",
     "mini-css-extract-plugin": "^2.7.6",
+    "postcss": "^8.4.25",
+    "postcss-loader": "^7.3.3",
+    "prettier": "^3.0.0",
+    "sass": "^1.63.6",
+    "sass-loader": "^13.3.2",
     "style-loader": "^3.3.3",
+    "stylelint": "^15.10.1",
+    "stylelint-config-standard": "^34.0.0",
+    "stylelint-order": "^6.0.3",
+    "stylelint-scss": "^5.0.1",
+    "stylelint-webpack-plugin": "^4.1.1",
     "webpack": "^5.88.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"
   },
   "dependencies": {
-    "path": "^0.12.7"
+    "@babel/polyfill": "^7.12.1",
+    "node-sass": "^9.0.0",
+    "path": "^0.12.7",
+    "postcss-preset-env": "^9.0.0"
   }
 }
