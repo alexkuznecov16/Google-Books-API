@@ -14,9 +14,18 @@ body,html{
 	margin: 0 auto;
 }
 
+*{
+	margin: 0;
+}
+
 a,i,img,button{
+	text-decoration: none;
 	transition: .2s linear;
 	cursor: pointer;
+}
+
+li,ul,ol{
+	list-style: none;
 }
 
 .header{
@@ -54,20 +63,18 @@ a,i,img,button{
 				text-transform: uppercase;
 				text-decoration: none;
 			}
+			& a:hover{
+				transform: scale(1.060);
+			}
 		}
 
 		.header-add-menu{
 			display: flex;
 			gap: 40px;
-			i{
-				width: 14px;
-				height: 17px;
-			}
 
-			.add-menu-bag{
+			& .add-menu-bag{
 				position: relative;
-
-				.items-count{
+				& span.items-count{
 					position: absolute;
 					background-color: #FF353A;
 					border-radius: 50px;
@@ -81,9 +88,15 @@ a,i,img,button{
 					cursor: pointer;
 				}
 			}
+			i{
+				width: 14px;
+				height: 17px;
+			}
 		}
 	}
 }
+
+
 
 
 .intro{
@@ -201,3 +214,204 @@ a,i,img,button{
 	}
 }
 
+
+
+.books{
+	width: 100%;
+	min-height: 100vh;
+	background-color: #FFFFFF;
+
+	.books__inner{
+		width: 100%;
+		min-height: 100vh;
+		position: relative;
+
+		.books__nav{
+			background-color: #EFEEF6;
+			padding: 45px 174px 81px 160px;
+			display: flex;
+			gap: 24px;
+			flex-direction: column;
+			align-items: self-start;
+			width: calc(416px - (174px + 160px));
+
+			& li.list-item{
+				transition: .2s linear;
+				& a{
+					font-weight: 500;
+					font-size: 12px;
+					color: #5C6A79;
+					line-height: 14.63px;
+				}
+			}
+
+			& li.list-item:hover{
+				transform: scale(1.1);
+				list-style: disc;
+
+				& a{
+					color: #1C2A39;
+				}
+			}
+
+			& li.active{
+				list-style: disc;
+				& a{
+					font-weight: 700;
+					font-size: 16px;
+					color: #1C2A39;
+				}
+			}
+
+			& li.active::marker{
+				color: #756AD3;
+			}
+		}
+
+		& .books-items{
+			position: absolute;
+			top: 50px;
+			left: 300px;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 75px;
+
+			.books__block{
+				display: flex;
+				flex-wrap: wrap;
+				gap: 96px 76px;
+				& .book-item{
+					position: relative;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					width: 424px;
+					height: 300px;
+					transition: .2s linear;
+	
+					& img{
+						width: 212px;
+						height: 300px;
+					}
+	
+					& .book__info{
+						display: flex;
+						flex-direction: column;
+						padding-left: 36px;
+	
+						.book-author{
+							color: #5C6A79;
+							font-size: 10px;
+							font-weight: 400;
+							font-family: 'Open Sans', sans-serif;
+							font-style: normal;
+	
+						}
+	
+						.book-title{
+							color: #1C2A39;
+							font-size: 16px;
+							font-weight: 700;
+							padding-top: 4px;
+						}
+	
+						.reviews{
+							display: flex;
+							gap: 6px;
+							align-items: baseline;
+							padding-top: 4px;
+	
+							.stars{
+								display: flex;
+								gap: 1px;
+								align-items: center;
+							}
+							& img{
+								width: 12px;
+								height: 12px;
+							}
+	
+							.reviews-count{
+								font-size: 10px;
+								font-family: 'Open Sans', sans-serif;
+								font-weight: 400;
+								color: #5C6A79;
+							}
+						}
+	
+						.book-text{
+							font-family: 'Open Sans', sans-serif;
+							font-size: 10px;
+							font-weight: 400;
+							color: #5C6A79;
+							line-height: 13.62px;
+							padding-top: 16px;
+						}
+	
+						.book-price{
+							font-weight: 700;
+							font-size: 13px;
+							color: #1C2A39;
+							padding: 16px 0;
+						}
+					}
+	
+					.book-buy{
+						border: 1px solid #4C3DB2;
+						padding: 16px 66px;
+						color: #4C3DB2;
+						font-size: 8px;
+						font-weight: 700;
+						text-transform: uppercase;
+						background-color: #FFFFFF;
+					}
+	
+					.book-buy:hover{
+						background-color: rgba(76, 61, 178, .7);
+						color: #FFFFFF;
+						transform: scale(1.060);
+					}
+				}
+	
+				& .book-item:hover{
+					transform: scale(1.050);
+				}
+	
+				& .book-item:last-child{
+					padding-bottom: 96px;
+				}
+			}
+
+		}
+
+		.more-books{
+			position: relative;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			left: 300px;
+			padding-bottom: 74px;
+
+			.books-more{
+				background-color: #FFFFFF;
+				border: 1px solid #4C3DB2;
+				padding: 17px 62px;
+			}
+			
+			.books-more:hover{
+				background-color: rgba(76, 61, 178, .7);
+				color: #FFFFFF;
+				transform: scale(1.060);
+			}
+		}
+	}
+}
+
+@media (max-width: 1750px){
+	.card-item-1{
+		right: 60px !important;
+	}
+	.card-item-2{
+		right: 0 !important;
+	}
+}

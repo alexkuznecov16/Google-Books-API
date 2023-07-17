@@ -77,8 +77,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _index_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./index.scss */ "./src/index.scss");
 /* harmony import */ var _modules_slider__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/slider */ "./src/modules/slider.js");
 /* harmony import */ var _modules_slider__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_modules_slider__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _modules_cart__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/cart */ "./src/modules/cart.js");
-/* harmony import */ var _modules_cart__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_modules_cart__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _modules_books__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/books */ "./src/modules/books.js");
+/* harmony import */ var _modules_header__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/header */ "./src/modules/header.js");
+/* harmony import */ var _modules_header__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_modules_header__WEBPACK_IMPORTED_MODULE_5__);
+
 
 
 
@@ -87,18 +89,242 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./src/modules/cart.js":
-/*!*****************************!*\
-  !*** ./src/modules/cart.js ***!
-  \*****************************/
+/***/ "./src/modules/books.js":
+/*!******************************!*\
+  !*** ./src/modules/books.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var uuid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-browser/v4.js");
+ // random nums
+let buyButtonID;
+const IDsArray = [];
+const cartItems = document.querySelector('.items-count');
+const menuCart = document.querySelector('.add-menu-bag');
+menuCart.appendChild(cartItems);
+const booksLinks = document.querySelectorAll('.list-item > a');
+booksLinks.forEach(link => {
+  link.addEventListener('click', async event => {
+    const searchText = encodeURIComponent(event.target.textContent.trim());
+    const API_KEY = 'AIzaSyA1ZDvV5hsNrqU5rZkZQCo-WhKuE1ptfa4';
+    const URL = `https://www.googleapis.com/books/v1/volumes?q=${searchText}&key=${API_KEY}&printType=books&startIndex=0&maxResults=6&langRestrict=en`;
+    const divBlock = document.querySelector('.books__block');
+    divBlock.innerHTML = '';
+    try {
+      const response = await fetch(URL);
+      const result = await response.json();
+      console.log(URL);
+      for (let i = 0; i < 6; i++) {
+        console.log(result.items[i]);
+        const divItem = document.createElement('div');
+        divItem.setAttribute('class', 'book-item');
+        const image = document.createElement('img');
+        const volumeInfo = result.items[i].volumeInfo;
+        if (volumeInfo.imageLinks && volumeInfo.imageLinks.thumbnail) {
+          image.setAttribute('src', volumeInfo.imageLinks.thumbnail);
+          image.setAttribute('alt', 'book image');
+        } else {
+          // Если изображение недоступно, можно установить пустое изображение или другую плейсхолдер-графику.
+          image.setAttribute('src', './assets/placeholder.png');
+          image.setAttribute('alt', 'No Image Available');
+        }
+        const divInfo = document.createElement('div');
+        divInfo.setAttribute('class', 'book__info');
+        const citeAuthor = document.createElement('cite');
+        citeAuthor.setAttribute('class', 'book-author');
+        if (!result.items[i].volumeInfo.authors || result.items[i].volumeInfo.authors.length === 0) {
+          citeAuthor.textContent = 'Not mentioned';
+        } else {
+          citeAuthor.textContent = result.items[i].volumeInfo.authors;
+        }
+        const h3Title = document.createElement('h3');
+        h3Title.setAttribute('class', 'book-title');
+        h3Title.textContent = result.items[i].volumeInfo.title;
+        const divReviews = document.createElement('div');
+        divReviews.setAttribute('class', 'reviews');
+        const divStars = document.createElement('div');
+        divStars.setAttribute('class', 'stars');
+        starsCheck(divStars, result.items[i].volumeInfo.averageRating);
+        const spanRevCount = document.createElement('span');
+        spanRevCount.setAttribute('class', 'reviews-count');
+        if (result.items[i].volumeInfo.ratingsCount) {
+          spanRevCount.textContent = `${result.items[i].volumeInfo.ratingsCount} reviews`;
+        }
+        const paraText = document.createElement('p');
+        paraText.setAttribute('class', 'book-text');
+        if (result.items[i].volumeInfo.description && result.items[i].volumeInfo.description.length > 100) {
+          paraText.textContent = `${result.items[i].volumeInfo.description.substring(0, 100)} ...`;
+        }
+        const spanPrice = document.createElement('span');
+        spanPrice.setAttribute('class', 'book-price');
+        if (result.items[i].saleInfo && result.items[i].saleInfo.retailPrice && result.items[i].saleInfo.retailPrice.amount) {
+          if (result.items[i].saleInfo.retailPrice.currencyCode === 'EUR') {
+            spanPrice.innerHTML = `${result.items[i].saleInfo.retailPrice.amount} &#x20AC;`;
+          } else {
+            spanPrice.innerHTML = `${result.items[i].saleInfo.retailPrice.amount} &#36;`;
+          }
+        } else {
+          spanPrice.innerHTML = 'Price not available';
+        }
+        const buyButton = document.createElement('button');
+        buyButton.setAttribute('class', 'book-buy');
+        buyButton.textContent = 'Buy now';
+        buyButtonID = (0,uuid__WEBPACK_IMPORTED_MODULE_0__["default"])();
+        if (!buyButton.hasAttribute('id')) {
+          buyButton.setAttribute('id', buyButtonID);
+        }
+        buyButton.addEventListener('click', () => {
+          localStorage.setItem('book', result.items[i]);
+          if (buyButton.classList.contains('active')) {
+            localStorage.removeItem('btnActiveID');
+            if (parseInt(cartItems.textContent) > 0) {
+              cartItems.textContent = parseInt(cartItems.textContent) - 1;
+              checkCartItems();
+            }
+            localStorage.removeItem('book');
+            localStorage.setItem('bookCount', parseInt(cartItems.textContent));
+            buyButton.classList.remove('active');
+            IDsArray.splice(IDsArray.indexOf(buyButtonID), 1);
+            activeButtonsCheck();
+            buyButton.textContent = 'Buy now';
+          } else {
+            localStorage.setItem('btnActiveID', buyButtonID);
+            cartItems.textContent = parseInt(cartItems.textContent) + 1;
+            localStorage.setItem('book', JSON.stringify(result.items[i]));
+            localStorage.setItem('bookCount', cartItems.textContent);
+            checkCartItems();
+            buyButton.classList.add('active');
+            IDsArray.push(buyButtonID);
+            activeButtonsCheck();
+            buyButton.textContent = 'In the cart';
+          }
+        });
+        function checkCartItems() {
+          if (parseInt(cartItems.textContent) > 0) {
+            cartItems.style.display = 'block';
+          } else if (parseInt(cartItems.textContent) <= 0) {
+            cartItems.style.display = 'none';
+          }
+        }
+        divInfo.appendChild(citeAuthor);
+        divInfo.appendChild(h3Title);
+        divInfo.appendChild(divReviews);
+        divReviews.appendChild(divStars);
+        divReviews.appendChild(spanRevCount);
+        divInfo.appendChild(paraText);
+        divInfo.appendChild(spanPrice);
+        divInfo.appendChild(buyButton);
+        divItem.appendChild(image);
+        divItem.appendChild(divInfo);
+        divBlock.appendChild(divItem);
+        console.log(IDsArray);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  });
+});
+function starsCheck(divStars, rating) {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+  for (let j = 0; j < fullStars; j++) {
+    const starImg = document.createElement('img');
+    starImg.setAttribute('src', './assets/StarGold.png');
+    starImg.setAttribute('alt', 'Gold Star');
+    divStars.appendChild(starImg);
+  }
+  if (hasHalfStar) {
+    const halfStarImg = document.createElement('img');
+    halfStarImg.setAttribute('src', './assets/StarHalf.png');
+    halfStarImg.setAttribute('alt', 'Half Star');
+    divStars.appendChild(halfStarImg);
+  }
+  const remainingStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+  for (let j = 0; j < remainingStars; j++) {
+    const grayStarImg = document.createElement('img');
+    grayStarImg.setAttribute('src', '../assets/StarGray.png');
+    grayStarImg.setAttribute('alt', 'Gray Star');
+    divStars.appendChild(grayStarImg);
+  }
+}
+const listItems = document.querySelectorAll('.list-item');
+listItems.forEach(item => {
+  item.addEventListener('click', () => {
+    item.classList.add('active');
+    listItems.forEach(otherItem => {
+      if (otherItem !== item) {
+        otherItem.classList.remove('active');
+      }
+    });
+  });
+});
+const savedBooks = localStorage.getItem('book');
+function checkActiveBooksCount() {
+  const savedBookCount = localStorage.getItem('bookCount');
+  if (savedBookCount) {
+    cartItems.textContent = savedBookCount;
+    for (let x = 1; x < parseInt(savedBookCount); x++) {
+      const savedBook = localStorage.getItem(`book${x}`);
+      if (savedBook) {
+        const book = JSON.parse(savedBook);
+        console.log(`${x} : ${book.volumeInfo.id}`);
+      }
+    }
+  }
+}
+window.addEventListener('DOMContentLoaded', () => {
+  checkActiveBooksCount();
+  if (savedBooks) {
+    console.log(savedBooks);
+  }
+});
+function activeButtonsCheck() {
+  const IDs = localStorage.getItem('btnActiveID');
+  if (IDs) {
+    const IDArray = IDs.split(',');
+    IDArray.forEach(id => {
+      if (IDsArray.includes(id)) {
+        const IDelement = document.getElementById(id);
+        IDelement.classList.add('active');
+      } else {
+        const IDelement = document.getElementById(id);
+        IDelement.classList.remove('active');
+      }
+    });
+  }
+}
+activeButtonsCheck();
+
+/***/ }),
+
+/***/ "./src/modules/header.js":
+/*!*******************************!*\
+  !*** ./src/modules/header.js ***!
+  \*******************************/
 /***/ (() => {
 
-const cartItems = document.getElementById('cartItemsCount');
-if (parseInt(cartItems.textContent) <= 0) {
-  cartItems.style.display = 'none';
-} else {
-  cartItems.style.display = 'block';
+const header = document.getElementById('header');
+function scroll() {
+  const scrollPos = document.documentElement.scrollTop;
+  if (scrollPos > 300) {
+    header.style.top = 0;
+    header.style.border = `2px solid`;
+    header.style.background = `rgba(255,255,255, .7)`;
+    header.style.width = `1120px`;
+    header.style.position = 'fixed';
+    header.style.zIndex = 2000;
+  } else if (scrollPos < 300) {
+    header.style.top = '';
+    header.style.border = ``;
+    header.style.background = `#ffffff)`;
+    header.style.width = `100%`;
+    header.style.position = '';
+    header.style.zIndex = '';
+  }
 }
+window.addEventListener('scroll', scroll);
 
 /***/ }),
 
@@ -9782,9 +10008,18 @@ ___CSS_LOADER_EXPORT___.push([module.id, `body,html{
 	margin: 0 auto;
 }
 
+*{
+	margin: 0;
+}
+
 a,i,img,button{
+	text-decoration: none;
 	transition: .2s linear;
 	cursor: pointer;
+}
+
+li,ul,ol{
+	list-style: none;
 }
 
 .header{
@@ -9822,20 +10057,18 @@ a,i,img,button{
 				text-transform: uppercase;
 				text-decoration: none;
 			}
+			& a:hover{
+				transform: scale(1.060);
+			}
 		}
 
 		.header-add-menu{
 			display: flex;
 			gap: 40px;
-			i{
-				width: 14px;
-				height: 17px;
-			}
 
-			.add-menu-bag{
+			& .add-menu-bag{
 				position: relative;
-
-				.items-count{
+				& span.items-count{
 					position: absolute;
 					background-color: #FF353A;
 					border-radius: 50px;
@@ -9849,9 +10082,15 @@ a,i,img,button{
 					cursor: pointer;
 				}
 			}
+			i{
+				width: 14px;
+				height: 17px;
+			}
 		}
 	}
 }
+
+
 
 
 .intro{
@@ -9967,7 +10206,209 @@ a,i,img,button{
 		transform: translateX(0);
 
 	}
-}`, "",{"version":3,"sources":["webpack://./src/style/_style.scss"],"names":[],"mappings":"AAAA;CACC,WAAW;CACX,iBAAiB;CACjB,aAAa;CACb,uBAAuB;CACvB,mBAAmB;CACnB,sBAAsB;CACtB,yBAAyB;AAC1B;;AAEA;CACC,iBAAiB;CACjB,WAAW;CACX,cAAc;AACf;;AAEA;CACC,sBAAsB;CACtB,eAAe;AAChB;;AAEA;CACC,aAAa;CACb,WAAW;CACX,sBAAsB;CACtB,aAAa;IACV,uBAAuB;IACvB,mBAAmB;;CAEtB;EACC,aAAa;EACb,mBAAmB;EACnB,mBAAmB;EACnB,6BAA6B;;EAE7B;GACC,cAAc;GACd,gBAAgB;GAChB,eAAe;EAChB;;EAEA;GACC,aAAa;GACb,SAAS;;GAET;IACC,cAAc;IACd,gBAAgB;GACjB;GACA;IACC,cAAc;IACd,gBAAgB;IAChB,eAAe;IACf,yBAAyB;IACzB,qBAAqB;GACtB;EACD;;EAEA;GACC,aAAa;GACb,SAAS;GACT;IACC,WAAW;IACX,YAAY;GACb;;GAEA;IACC,kBAAkB;;IAElB;KACC,kBAAkB;KAClB,yBAAyB;KACzB,mBAAmB;KACnB,YAAY;KACZ,eAAe;KACf,gBAAgB;KAChB,cAAc;KACd,WAAW;KACX,WAAW;KACX,YAAY;KACZ,eAAe;IAChB;GACD;EACD;CACD;AACD;;;AAGA;CACC,WAAW;CACX,2BAA2B;CAC3B,qBAAqB;;CAErB;EACC,kBAAkB;EAClB,WAAW;EACX,aAAa;EACb;GACC,aAAa;GACb,WAAW;GACX,kBAAkB;GAClB,aAAa;GACb,uBAAuB;;GAEvB;IACC,WAAW;;IAEX;KACC,UAAU;KACV,6BAA6B;KAC7B,kBAAkB;KAClB,WAAW;KACX,iBAAiB;MAChB;;KAED;MACC,aAAa;MACb,aAAa;KACd;GACF;;KAEE;IACD,aAAa;IACb,mBAAmB;IACnB,uBAAuB;IACvB,SAAS;IACT,kBAAkB;IAClB,aAAa;;KAEZ;MACC,eAAe;MACf,cAAc;;MAEd;OACC,YAAY;OACZ,WAAW;MACZ;KACD;;KAEA;MACC,cAAc;KACf;KACA;EACH;;;EAGA;GACC,kBAAkB;GAClB,QAAQ;GACR,MAAM;;GAEN;IACC,aAAa;IACb,aAAa;IACb,sBAAsB;IACtB,yBAAyB;;IAEzB;KACC,uBAAuB;IACxB;GACD;;GAEA;IACC,gBAAgB;IAChB,eAAe;IACf,cAAc;IACd,oBAAoB;IACpB,yBAAyB;GAC1B;;GAEA;IACC,yBAAyB;IACzB,YAAY;IACZ,aAAa;IACb,kBAAkB;IAClB,YAAY;IACZ,SAAS;GACV;GACA;IACC,yBAAyB;IACzB,YAAY;IACZ,aAAa;IACb,kBAAkB;IAClB,UAAU;IACV,iBAAiB;GAClB;EACD;CACD;AACD;;;AAGA;CACC;EACC,UAAU;EACV,4BAA4B;CAC7B;CACA;EACC,UAAU;EACV,wBAAwB;;CAEzB;AACD","sourcesContent":["body,html{\r\n\twidth: 100%;\r\n\tmin-height: 100vh;\r\n\tdisplay: flex;\r\n\tjustify-content: center;\r\n\talign-items: center;\r\n\tflex-direction: column;\r\n\tfont-family: 'Montserrat';\r\n}\r\n\r\n.container {\r\n\tmax-width: 1120px;\r\n\twidth: 100%;\r\n\tmargin: 0 auto;\r\n}\r\n\r\na,i,img,button{\r\n\ttransition: .2s linear;\r\n\tcursor: pointer;\r\n}\r\n\r\n.header{\r\n\theight: 116px;\r\n\twidth: 100%;\r\n\tbackground-color: #fff;\r\n\tdisplay: flex;\r\n    justify-content: center;\r\n    align-items: center;\r\n\r\n\t.header__inner{\r\n\t\tdisplay: flex;\r\n\t\tflex-direction: row;\r\n\t\talign-items: center;\r\n\t\tjustify-content: space-around;\r\n\r\n\t\t.header-logo{\r\n\t\t\tcolor: #1C2A39;\r\n\t\t\tfont-weight: 700;\r\n\t\t\tfont-size: 24px;\r\n\t\t}\r\n\r\n\t\t.header-nav{\r\n\t\t\tdisplay: flex;\r\n\t\t\tgap: 40px;\r\n\r\n\t\t\t& a.active{\r\n\t\t\t\tcolor: #1C2A39;\r\n\t\t\t\tfont-weight: 900;\r\n\t\t\t}\r\n\t\t\t& a{\r\n\t\t\t\tcolor: #5C6A79;\r\n\t\t\t\tfont-weight: 700;\r\n\t\t\t\tfont-size: 10px;\r\n\t\t\t\ttext-transform: uppercase;\r\n\t\t\t\ttext-decoration: none;\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\t.header-add-menu{\r\n\t\t\tdisplay: flex;\r\n\t\t\tgap: 40px;\r\n\t\t\ti{\r\n\t\t\t\twidth: 14px;\r\n\t\t\t\theight: 17px;\r\n\t\t\t}\r\n\r\n\t\t\t.add-menu-bag{\r\n\t\t\t\tposition: relative;\r\n\r\n\t\t\t\t.items-count{\r\n\t\t\t\t\tposition: absolute;\r\n\t\t\t\t\tbackground-color: #FF353A;\r\n\t\t\t\t\tborder-radius: 50px;\r\n\t\t\t\t\tpadding: 2px;\r\n\t\t\t\t\tfont-size: 10px;\r\n\t\t\t\t\tfont-weight: 500;\r\n\t\t\t\t\tcolor: #FFFFFF;\r\n\t\t\t\t\tz-index: 10;\r\n\t\t\t\t\tright: -6px;\r\n\t\t\t\t\tbottom: -4px;\r\n\t\t\t\t\tcursor: pointer;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n}\r\n\r\n\r\n.intro{\r\n\twidth: 100%;\r\n\theight: calc(100vh - 116px);\r\n\tpadding-bottom: 134px;\r\n\r\n\t& .intro__inner{\r\n\t\tposition: relative;\r\n\t\twidth: 100%;\r\n\t\theight: 702px;\r\n\t\t& .slide-block{\r\n\t\t\theight: 702px;\r\n\t\t\twidth: 100%;\r\n\t\t\tposition: relative;\r\n\t\t\tdisplay: flex;\r\n\t\t\tjustify-content: center;\r\n\r\n\t\t\t& .slide-link{\r\n\t\t\t\twidth: 100%;\r\n\r\n\t\t\t\t.slide-image {\r\n\t\t\t\t\topacity: 1;\r\n\t\t\t\t\tanimation-fill-mode: forwards;\r\n\t\t\t\t\tposition: absolute;\r\n\t\t\t\t\twidth: 100%;\r\n\t\t\t\t\tobject-fit: cover;\r\n\t\t\t\t  }\r\n\t\t\r\n\t\t\t\t\t& img{\r\n\t\t\t\t\t\theight: 702px;\r\n\t\t\t\t\t\twidth: 1120px;\r\n\t\t\t\t\t}\r\n\t\t\t}\r\n\t\t\t\t\r\n\t\t\t  .slider-dots{\r\n\t\t\t\tdisplay: flex;\r\n\t\t\t\talign-items: center;\r\n\t\t\t\tjustify-content: center;\r\n\t\t\t\tgap: 10px;\r\n\t\t\t\tposition: absolute;\r\n\t\t\t\tbottom: -30px;\r\n\r\n\t\t\t\t\t& i{\r\n\t\t\t\t\t\tcursor: pointer;\r\n\t\t\t\t\t\tcolor: #EFEEF6;\r\n\r\n\t\t\t\t\t\t&:hover{\r\n\t\t\t\t\t\t\tscale: 1.050;\r\n\t\t\t\t\t\t\topacity: .6;\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\r\n\t\t\t\t\t& .active{\r\n\t\t\t\t\t\tcolor: #9E98DC;\r\n\t\t\t\t\t}\r\n\t\t\t  }\r\n\t\t}\r\n\r\n\r\n\t\t& .cards-block{\r\n\t\t\tposition: absolute;\r\n\t\t\tright: 0;\r\n\t\t\ttop: 0;\r\n\r\n\t\t\t& .card-item{\r\n\t\t\t\tpadding: 20px;\r\n\t\t\t\tdisplay: flex;\r\n\t\t\t\tflex-direction: column;\r\n\t\t\t\tjustify-content: flex-end;\r\n\r\n\t\t\t\t&:hover{\r\n\t\t\t\t\ttransform: scale(1.050);\r\n\t\t\t\t}\r\n\t\t\t}\r\n\r\n\t\t\t& .card-item p{\r\n\t\t\t\tfont-weight: 700;\r\n\t\t\t\tfont-size: 18px;\r\n\t\t\t\tcolor: #1C2A39;\r\n\t\t\t\tline-height: 21.94px;\r\n\t\t\t\ttext-transform: uppercase;\r\n\t\t\t}\r\n\r\n\t\t\t& .card-item-1{\r\n\t\t\t\tbackground-color: #9E98DC;\r\n\t\t\t\twidth: 149px;\r\n\t\t\t\theight: 204px;\r\n\t\t\t\tposition: absolute;\r\n\t\t\t\tright: -80px;\r\n\t\t\t\ttop: 82px;\r\n\t\t\t}\r\n\t\t\t& .card-item-2{\r\n\t\t\t\tbackground-color: #FF8FE6;\r\n\t\t\t\twidth: 137px;\r\n\t\t\t\theight: 273px;\r\n\t\t\t\tposition: absolute;\r\n\t\t\t\ttop: 360px;\r\n\t\t\t\tmargin-left: 10px;\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n}\r\n\r\n\r\n@keyframes slideAnimation {\r\n\tfrom {\r\n\t\topacity: 0;\r\n\t\ttransform: translateX(-50px);\r\n\t}\r\n\tto {\r\n\t\topacity: 1;\r\n\t\ttransform: translateX(0);\r\n\r\n\t}\r\n}"],"sourceRoot":""}]);
+}
+
+
+
+.books{
+	width: 100%;
+	min-height: 100vh;
+	background-color: #FFFFFF;
+
+	.books__inner{
+		width: 100%;
+		min-height: 100vh;
+		position: relative;
+
+		.books__nav{
+			background-color: #EFEEF6;
+			padding: 45px 174px 81px 160px;
+			display: flex;
+			gap: 24px;
+			flex-direction: column;
+			align-items: self-start;
+			width: calc(416px - (174px + 160px));
+
+			& li.list-item{
+				transition: .2s linear;
+				& a{
+					font-weight: 500;
+					font-size: 12px;
+					color: #5C6A79;
+					line-height: 14.63px;
+				}
+			}
+
+			& li.list-item:hover{
+				transform: scale(1.1);
+				list-style: disc;
+
+				& a{
+					color: #1C2A39;
+				}
+			}
+
+			& li.active{
+				list-style: disc;
+				& a{
+					font-weight: 700;
+					font-size: 16px;
+					color: #1C2A39;
+				}
+			}
+
+			& li.active::marker{
+				color: #756AD3;
+			}
+		}
+
+		& .books-items{
+			position: absolute;
+			top: 50px;
+			left: 300px;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 75px;
+
+			.books__block{
+				display: flex;
+				flex-wrap: wrap;
+				gap: 96px 76px;
+				& .book-item{
+					position: relative;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					width: 424px;
+					height: 300px;
+					transition: .2s linear;
+	
+					& img{
+						width: 212px;
+						height: 300px;
+					}
+	
+					& .book__info{
+						display: flex;
+						flex-direction: column;
+						padding-left: 36px;
+	
+						.book-author{
+							color: #5C6A79;
+							font-size: 10px;
+							font-weight: 400;
+							font-family: 'Open Sans', sans-serif;
+							font-style: normal;
+	
+						}
+	
+						.book-title{
+							color: #1C2A39;
+							font-size: 16px;
+							font-weight: 700;
+							padding-top: 4px;
+						}
+	
+						.reviews{
+							display: flex;
+							gap: 6px;
+							align-items: baseline;
+							padding-top: 4px;
+	
+							.stars{
+								display: flex;
+								gap: 1px;
+								align-items: center;
+							}
+							& img{
+								width: 12px;
+								height: 12px;
+							}
+	
+							.reviews-count{
+								font-size: 10px;
+								font-family: 'Open Sans', sans-serif;
+								font-weight: 400;
+								color: #5C6A79;
+							}
+						}
+	
+						.book-text{
+							font-family: 'Open Sans', sans-serif;
+							font-size: 10px;
+							font-weight: 400;
+							color: #5C6A79;
+							line-height: 13.62px;
+							padding-top: 16px;
+						}
+	
+						.book-price{
+							font-weight: 700;
+							font-size: 13px;
+							color: #1C2A39;
+							padding: 16px 0;
+						}
+					}
+	
+					.book-buy{
+						border: 1px solid #4C3DB2;
+						padding: 16px 66px;
+						color: #4C3DB2;
+						font-size: 8px;
+						font-weight: 700;
+						text-transform: uppercase;
+						background-color: #FFFFFF;
+					}
+	
+					.book-buy:hover{
+						background-color: rgba(76, 61, 178, .7);
+						color: #FFFFFF;
+						transform: scale(1.060);
+					}
+				}
+	
+				& .book-item:hover{
+					transform: scale(1.050);
+				}
+	
+				& .book-item:last-child{
+					padding-bottom: 96px;
+				}
+			}
+
+		}
+
+		.more-books{
+			position: relative;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			left: 300px;
+			padding-bottom: 74px;
+
+			.books-more{
+				background-color: #FFFFFF;
+				border: 1px solid #4C3DB2;
+				padding: 17px 62px;
+			}
+			
+			.books-more:hover{
+				background-color: rgba(76, 61, 178, .7);
+				color: #FFFFFF;
+				transform: scale(1.060);
+			}
+		}
+	}
+}
+
+@media (max-width: 1750px){
+	.card-item-1{
+		right: 60px !important;
+	}
+	.card-item-2{
+		right: 0 !important;
+	}
+}`, "",{"version":3,"sources":["webpack://./src/style/_style.scss"],"names":[],"mappings":"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","sourcesContent":["body,html{\r\n\twidth: 100%;\r\n\tmin-height: 100vh;\r\n\tdisplay: flex;\r\n\tjustify-content: center;\r\n\talign-items: center;\r\n\tflex-direction: column;\r\n\tfont-family: 'Montserrat';\r\n}\r\n\r\n.container {\r\n\tmax-width: 1120px;\r\n\twidth: 100%;\r\n\tmargin: 0 auto;\r\n}\r\n\r\n*{\r\n\tmargin: 0;\r\n}\r\n\r\na,i,img,button{\r\n\ttext-decoration: none;\r\n\ttransition: .2s linear;\r\n\tcursor: pointer;\r\n}\r\n\r\nli,ul,ol{\r\n\tlist-style: none;\r\n}\r\n\r\n.header{\r\n\theight: 116px;\r\n\twidth: 100%;\r\n\tbackground-color: #fff;\r\n\tdisplay: flex;\r\n    justify-content: center;\r\n    align-items: center;\r\n\r\n\t.header__inner{\r\n\t\tdisplay: flex;\r\n\t\tflex-direction: row;\r\n\t\talign-items: center;\r\n\t\tjustify-content: space-around;\r\n\r\n\t\t.header-logo{\r\n\t\t\tcolor: #1C2A39;\r\n\t\t\tfont-weight: 700;\r\n\t\t\tfont-size: 24px;\r\n\t\t}\r\n\r\n\t\t.header-nav{\r\n\t\t\tdisplay: flex;\r\n\t\t\tgap: 40px;\r\n\r\n\t\t\t& a.active{\r\n\t\t\t\tcolor: #1C2A39;\r\n\t\t\t\tfont-weight: 900;\r\n\t\t\t}\r\n\t\t\t& a{\r\n\t\t\t\tcolor: #5C6A79;\r\n\t\t\t\tfont-weight: 700;\r\n\t\t\t\tfont-size: 10px;\r\n\t\t\t\ttext-transform: uppercase;\r\n\t\t\t\ttext-decoration: none;\r\n\t\t\t}\r\n\t\t\t& a:hover{\r\n\t\t\t\ttransform: scale(1.060);\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\t.header-add-menu{\r\n\t\t\tdisplay: flex;\r\n\t\t\tgap: 40px;\r\n\r\n\t\t\t& .add-menu-bag{\r\n\t\t\t\tposition: relative;\r\n\t\t\t\t& span.items-count{\r\n\t\t\t\t\tposition: absolute;\r\n\t\t\t\t\tbackground-color: #FF353A;\r\n\t\t\t\t\tborder-radius: 50px;\r\n\t\t\t\t\tpadding: 2px;\r\n\t\t\t\t\tfont-size: 10px;\r\n\t\t\t\t\tfont-weight: 500;\r\n\t\t\t\t\tcolor: #FFFFFF;\r\n\t\t\t\t\tz-index: 10;\r\n\t\t\t\t\tright: -6px;\r\n\t\t\t\t\tbottom: -4px;\r\n\t\t\t\t\tcursor: pointer;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t\ti{\r\n\t\t\t\twidth: 14px;\r\n\t\t\t\theight: 17px;\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n}\r\n\r\n\r\n\r\n\r\n.intro{\r\n\twidth: 100%;\r\n\theight: calc(100vh - 116px);\r\n\tpadding-bottom: 134px;\r\n\r\n\t& .intro__inner{\r\n\t\tposition: relative;\r\n\t\twidth: 100%;\r\n\t\theight: 702px;\r\n\t\t& .slide-block{\r\n\t\t\theight: 702px;\r\n\t\t\twidth: 100%;\r\n\t\t\tposition: relative;\r\n\t\t\tdisplay: flex;\r\n\t\t\tjustify-content: center;\r\n\r\n\t\t\t& .slide-link{\r\n\t\t\t\twidth: 100%;\r\n\r\n\t\t\t\t.slide-image {\r\n\t\t\t\t\topacity: 1;\r\n\t\t\t\t\tanimation-fill-mode: forwards;\r\n\t\t\t\t\tposition: absolute;\r\n\t\t\t\t\twidth: 100%;\r\n\t\t\t\t\tobject-fit: cover;\r\n\t\t\t\t  }\r\n\t\t\r\n\t\t\t\t\t& img{\r\n\t\t\t\t\t\theight: 702px;\r\n\t\t\t\t\t\twidth: 1120px;\r\n\t\t\t\t\t}\r\n\t\t\t}\r\n\t\t\t\t\r\n\t\t\t  .slider-dots{\r\n\t\t\t\tdisplay: flex;\r\n\t\t\t\talign-items: center;\r\n\t\t\t\tjustify-content: center;\r\n\t\t\t\tgap: 10px;\r\n\t\t\t\tposition: absolute;\r\n\t\t\t\tbottom: -30px;\r\n\r\n\t\t\t\t\t& i{\r\n\t\t\t\t\t\tcursor: pointer;\r\n\t\t\t\t\t\tcolor: #EFEEF6;\r\n\r\n\t\t\t\t\t\t&:hover{\r\n\t\t\t\t\t\t\tscale: 1.050;\r\n\t\t\t\t\t\t\topacity: .6;\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\r\n\t\t\t\t\t& .active{\r\n\t\t\t\t\t\tcolor: #9E98DC;\r\n\t\t\t\t\t}\r\n\t\t\t  }\r\n\t\t}\r\n\r\n\r\n\t\t& .cards-block{\r\n\t\t\tposition: absolute;\r\n\t\t\tright: 0;\r\n\t\t\ttop: 0;\r\n\r\n\t\t\t& .card-item{\r\n\t\t\t\tpadding: 20px;\r\n\t\t\t\tdisplay: flex;\r\n\t\t\t\tflex-direction: column;\r\n\t\t\t\tjustify-content: flex-end;\r\n\r\n\t\t\t\t&:hover{\r\n\t\t\t\t\ttransform: scale(1.050);\r\n\t\t\t\t}\r\n\t\t\t}\r\n\r\n\t\t\t& .card-item p{\r\n\t\t\t\tfont-weight: 700;\r\n\t\t\t\tfont-size: 18px;\r\n\t\t\t\tcolor: #1C2A39;\r\n\t\t\t\tline-height: 21.94px;\r\n\t\t\t\ttext-transform: uppercase;\r\n\t\t\t}\r\n\r\n\t\t\t& .card-item-1{\r\n\t\t\t\tbackground-color: #9E98DC;\r\n\t\t\t\twidth: 149px;\r\n\t\t\t\theight: 204px;\r\n\t\t\t\tposition: absolute;\r\n\t\t\t\tright: -80px;\r\n\t\t\t\ttop: 82px;\r\n\t\t\t}\r\n\t\t\t& .card-item-2{\r\n\t\t\t\tbackground-color: #FF8FE6;\r\n\t\t\t\twidth: 137px;\r\n\t\t\t\theight: 273px;\r\n\t\t\t\tposition: absolute;\r\n\t\t\t\ttop: 360px;\r\n\t\t\t\tmargin-left: 10px;\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n}\r\n\r\n\r\n@keyframes slideAnimation {\r\n\tfrom {\r\n\t\topacity: 0;\r\n\t\ttransform: translateX(-50px);\r\n\t}\r\n\tto {\r\n\t\topacity: 1;\r\n\t\ttransform: translateX(0);\r\n\r\n\t}\r\n}\r\n\r\n\r\n\r\n.books{\r\n\twidth: 100%;\r\n\tmin-height: 100vh;\r\n\tbackground-color: #FFFFFF;\r\n\r\n\t.books__inner{\r\n\t\twidth: 100%;\r\n\t\tmin-height: 100vh;\r\n\t\tposition: relative;\r\n\r\n\t\t.books__nav{\r\n\t\t\tbackground-color: #EFEEF6;\r\n\t\t\tpadding: 45px 174px 81px 160px;\r\n\t\t\tdisplay: flex;\r\n\t\t\tgap: 24px;\r\n\t\t\tflex-direction: column;\r\n\t\t\talign-items: self-start;\r\n\t\t\twidth: calc(416px - (174px + 160px));\r\n\r\n\t\t\t& li.list-item{\r\n\t\t\t\ttransition: .2s linear;\r\n\t\t\t\t& a{\r\n\t\t\t\t\tfont-weight: 500;\r\n\t\t\t\t\tfont-size: 12px;\r\n\t\t\t\t\tcolor: #5C6A79;\r\n\t\t\t\t\tline-height: 14.63px;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\r\n\t\t\t& li.list-item:hover{\r\n\t\t\t\ttransform: scale(1.1);\r\n\t\t\t\tlist-style: disc;\r\n\r\n\t\t\t\t& a{\r\n\t\t\t\t\tcolor: #1C2A39;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\r\n\t\t\t& li.active{\r\n\t\t\t\tlist-style: disc;\r\n\t\t\t\t& a{\r\n\t\t\t\t\tfont-weight: 700;\r\n\t\t\t\t\tfont-size: 16px;\r\n\t\t\t\t\tcolor: #1C2A39;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\r\n\t\t\t& li.active::marker{\r\n\t\t\t\tcolor: #756AD3;\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\t& .books-items{\r\n\t\t\tposition: absolute;\r\n\t\t\ttop: 50px;\r\n\t\t\tleft: 300px;\r\n\t\t\tdisplay: flex;\r\n\t\t\tflex-wrap: wrap;\r\n\t\t\tgap: 75px;\r\n\r\n\t\t\t.books__block{\r\n\t\t\t\tdisplay: flex;\r\n\t\t\t\tflex-wrap: wrap;\r\n\t\t\t\tgap: 96px 76px;\r\n\t\t\t\t& .book-item{\r\n\t\t\t\t\tposition: relative;\r\n\t\t\t\t\tdisplay: flex;\r\n\t\t\t\t\tjustify-content: center;\r\n\t\t\t\t\talign-items: center;\r\n\t\t\t\t\twidth: 424px;\r\n\t\t\t\t\theight: 300px;\r\n\t\t\t\t\ttransition: .2s linear;\r\n\t\r\n\t\t\t\t\t& img{\r\n\t\t\t\t\t\twidth: 212px;\r\n\t\t\t\t\t\theight: 300px;\r\n\t\t\t\t\t}\r\n\t\r\n\t\t\t\t\t& .book__info{\r\n\t\t\t\t\t\tdisplay: flex;\r\n\t\t\t\t\t\tflex-direction: column;\r\n\t\t\t\t\t\tpadding-left: 36px;\r\n\t\r\n\t\t\t\t\t\t.book-author{\r\n\t\t\t\t\t\t\tcolor: #5C6A79;\r\n\t\t\t\t\t\t\tfont-size: 10px;\r\n\t\t\t\t\t\t\tfont-weight: 400;\r\n\t\t\t\t\t\t\tfont-family: 'Open Sans', sans-serif;\r\n\t\t\t\t\t\t\tfont-style: normal;\r\n\t\r\n\t\t\t\t\t\t}\r\n\t\r\n\t\t\t\t\t\t.book-title{\r\n\t\t\t\t\t\t\tcolor: #1C2A39;\r\n\t\t\t\t\t\t\tfont-size: 16px;\r\n\t\t\t\t\t\t\tfont-weight: 700;\r\n\t\t\t\t\t\t\tpadding-top: 4px;\r\n\t\t\t\t\t\t}\r\n\t\r\n\t\t\t\t\t\t.reviews{\r\n\t\t\t\t\t\t\tdisplay: flex;\r\n\t\t\t\t\t\t\tgap: 6px;\r\n\t\t\t\t\t\t\talign-items: baseline;\r\n\t\t\t\t\t\t\tpadding-top: 4px;\r\n\t\r\n\t\t\t\t\t\t\t.stars{\r\n\t\t\t\t\t\t\t\tdisplay: flex;\r\n\t\t\t\t\t\t\t\tgap: 1px;\r\n\t\t\t\t\t\t\t\talign-items: center;\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t\t& img{\r\n\t\t\t\t\t\t\t\twidth: 12px;\r\n\t\t\t\t\t\t\t\theight: 12px;\r\n\t\t\t\t\t\t\t}\r\n\t\r\n\t\t\t\t\t\t\t.reviews-count{\r\n\t\t\t\t\t\t\t\tfont-size: 10px;\r\n\t\t\t\t\t\t\t\tfont-family: 'Open Sans', sans-serif;\r\n\t\t\t\t\t\t\t\tfont-weight: 400;\r\n\t\t\t\t\t\t\t\tcolor: #5C6A79;\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t}\r\n\t\r\n\t\t\t\t\t\t.book-text{\r\n\t\t\t\t\t\t\tfont-family: 'Open Sans', sans-serif;\r\n\t\t\t\t\t\t\tfont-size: 10px;\r\n\t\t\t\t\t\t\tfont-weight: 400;\r\n\t\t\t\t\t\t\tcolor: #5C6A79;\r\n\t\t\t\t\t\t\tline-height: 13.62px;\r\n\t\t\t\t\t\t\tpadding-top: 16px;\r\n\t\t\t\t\t\t}\r\n\t\r\n\t\t\t\t\t\t.book-price{\r\n\t\t\t\t\t\t\tfont-weight: 700;\r\n\t\t\t\t\t\t\tfont-size: 13px;\r\n\t\t\t\t\t\t\tcolor: #1C2A39;\r\n\t\t\t\t\t\t\tpadding: 16px 0;\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\t\r\n\t\t\t\t\t.book-buy{\r\n\t\t\t\t\t\tborder: 1px solid #4C3DB2;\r\n\t\t\t\t\t\tpadding: 16px 66px;\r\n\t\t\t\t\t\tcolor: #4C3DB2;\r\n\t\t\t\t\t\tfont-size: 8px;\r\n\t\t\t\t\t\tfont-weight: 700;\r\n\t\t\t\t\t\ttext-transform: uppercase;\r\n\t\t\t\t\t\tbackground-color: #FFFFFF;\r\n\t\t\t\t\t}\r\n\t\r\n\t\t\t\t\t.book-buy:hover{\r\n\t\t\t\t\t\tbackground-color: rgba(76, 61, 178, .7);\r\n\t\t\t\t\t\tcolor: #FFFFFF;\r\n\t\t\t\t\t\ttransform: scale(1.060);\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\r\n\t\t\t\t& .book-item:hover{\r\n\t\t\t\t\ttransform: scale(1.050);\r\n\t\t\t\t}\r\n\t\r\n\t\t\t\t& .book-item:last-child{\r\n\t\t\t\t\tpadding-bottom: 96px;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\r\n\t\t}\r\n\r\n\t\t.more-books{\r\n\t\t\tposition: relative;\r\n\t\t\tdisplay: flex;\r\n\t\t\tjustify-content: center;\r\n\t\t\talign-items: center;\r\n\t\t\tleft: 300px;\r\n\t\t\tpadding-bottom: 74px;\r\n\r\n\t\t\t.books-more{\r\n\t\t\t\tbackground-color: #FFFFFF;\r\n\t\t\t\tborder: 1px solid #4C3DB2;\r\n\t\t\t\tpadding: 17px 62px;\r\n\t\t\t}\r\n\t\t\t\r\n\t\t\t.books-more:hover{\r\n\t\t\t\tbackground-color: rgba(76, 61, 178, .7);\r\n\t\t\t\tcolor: #FFFFFF;\r\n\t\t\t\ttransform: scale(1.060);\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n}\r\n\r\n@media (max-width: 1750px){\r\n\t.card-item-1{\r\n\t\tright: 60px !important;\r\n\t}\r\n\t.card-item-2{\r\n\t\tright: 0 !important;\r\n\t}\r\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -10149,7 +10590,7 @@ __webpack_require__.r(__webpack_exports__);
 var ___HTML_LOADER_IMPORT_0___ = new URL(/* asset import */ __webpack_require__(/*! ./img/banner1.png */ "./src/img/banner1.png"), __webpack_require__.b);
 // Module
 var ___HTML_LOADER_REPLACEMENT_0___ = _node_modules_html_loader_dist_runtime_getUrl_js__WEBPACK_IMPORTED_MODULE_0___default()(___HTML_LOADER_IMPORT_0___);
-var code = "<!doctype html>\r\n<html lang=\"en\">\r\n\t<head>\r\n\t\t<meta charset=\"UTF-8\" />\r\n\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n\t\t<title>Books shop</title>\r\n\t\t<" + "script src=\"https://kit.fontawesome.com/39bbe9b596.js\" crossorigin=\"anonymous\"><" + "/script>\r\n\t</head>\r\n\t<body>\r\n\t\t<header class=\"header\">\r\n\t\t\t<div class=\"container\">\r\n\t\t\t\t<div class=\"header__inner\">\r\n\t\t\t\t\t<div class=\"header-logo\">Bookshop</div>\r\n\t\t\t\t\t<nav class=\"header-nav\">\r\n\t\t\t\t\t\t<a class=\"active\" href=\"#\">Books</a>\r\n\t\t\t\t\t\t<a href=\"#\">Audiobooks</a>\r\n\t\t\t\t\t\t<a href=\"#\">Stationery & gifts</a>\r\n\t\t\t\t\t\t<a href=\"#\">Blog</a>\r\n\t\t\t\t\t</nav>\r\n\t\t\t\t\t<div class=\"header-add-menu\">\r\n\t\t\t\t\t\t<i title=\"User profile\" class=\"fa-regular fa-user\"></i>\r\n\t\t\t\t\t\t<i title=\"Search\" class=\"fa-solid fa-magnifying-glass\"></i>\r\n\t\t\t\t\t\t<div title=\"Your items in the cart\" class=\"add-menu-bag\">\r\n\t\t\t\t\t\t\t<i class=\"fa-solid fa-basket-shopping\"></i>\r\n\t\t\t\t\t\t\t<span id=\"cartItemsCount\" class=\"items-count\">0</span>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\t\t\t<!-- /.container -->\r\n\t\t</header>\r\n\t\t<!-- /.header -->\r\n\t\t<main class=\"intro\">\r\n\t\t\t<div class=\"container\">\r\n\t\t\t\t<div class=\"intro__inner\">\r\n\t\t\t\t\t<div class=\"slide-block\">\r\n\t\t\t\t\t\t<a class=\"slide-link\" id=\"slideURL\" href=\"\">\r\n\t\t\t\t\t\t\t<img id=\"slide\" class=\"slide-image\" src=\"" + ___HTML_LOADER_REPLACEMENT_0___ + "\" alt=\"slide\" />\r\n\t\t\t\t\t\t</a>\r\n\t\t\t\t\t\t<div class=\"slider-dots\">\r\n\t\t\t\t\t\t\t<i id=\"dot1\" class=\"fa-solid fa-circle active\"></i>\r\n\t\t\t\t\t\t\t<i id=\"dot2\" class=\"fa-solid fa-circle\"></i>\r\n\t\t\t\t\t\t\t<i id=\"dot3\" class=\"fa-solid fa-circle\"></i>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"cards-block\">\r\n\t\t\t\t\t\t<a class=\"card-item card-item-1\">\r\n\t\t\t\t\t\t\t<p class=\"card-text\">Change<br />old book<br />on new</p>\r\n\t\t\t\t\t\t\t<i class=\"fa-solid fa-arrow-right-long\"></i>\r\n\t\t\t\t\t\t</a>\r\n\t\t\t\t\t\t<a class=\"card-item card-item-2\">\r\n\t\t\t\t\t\t\t<p class=\"card-text\">Top<br />100<br />books<br />2022</p>\r\n\t\t\t\t\t\t\t<i class=\"fa-solid fa-arrow-right-long\"></i>\r\n\t\t\t\t\t\t</a>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\t\t\t<!-- /.container -->\r\n\t\t</main>\r\n\t\t<!-- /.intro -->\r\n\t</body>\r\n</html>\r\n";
+var code = "<!doctype html>\r\n<html lang=\"en\">\r\n\t<head>\r\n\t\t<meta charset=\"UTF-8\" />\r\n\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n\t\t<title>Books shop</title>\r\n\t\t<" + "script src=\"https://kit.fontawesome.com/39bbe9b596.js\" crossorigin=\"anonymous\"><" + "/script>\r\n\t</head>\r\n\t<body>\r\n\t\t<header id=\"header\" class=\"header\">\r\n\t\t\t<div class=\"container\">\r\n\t\t\t\t<div class=\"header__inner\">\r\n\t\t\t\t\t<div class=\"header-logo\">Bookshop</div>\r\n\t\t\t\t\t<nav class=\"header-nav\">\r\n\t\t\t\t\t\t<a class=\"active\" href=\"#\">Books</a>\r\n\t\t\t\t\t\t<a href=\"#\">Audiobooks</a>\r\n\t\t\t\t\t\t<a href=\"#\">Stationery & gifts</a>\r\n\t\t\t\t\t\t<a href=\"#\">Blog</a>\r\n\t\t\t\t\t</nav>\r\n\t\t\t\t\t<div class=\"header-add-menu\">\r\n\t\t\t\t\t\t<i title=\"User profile\" class=\"fa-regular fa-user\"></i>\r\n\t\t\t\t\t\t<i title=\"Search\" class=\"fa-solid fa-magnifying-glass\"></i>\r\n\t\t\t\t\t\t<div title=\"Your items in the cart\" class=\"add-menu-bag\">\r\n\t\t\t\t\t\t\t<i class=\"fa-solid fa-basket-shopping\"></i>\r\n\t\t\t\t\t\t\t<span class=\"items-count\">0</span>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\t\t\t<!-- /.container -->\r\n\t\t</header>\r\n\t\t<!-- /.header -->\r\n\t\t<main class=\"intro\">\r\n\t\t\t<div class=\"container\">\r\n\t\t\t\t<div class=\"intro__inner\">\r\n\t\t\t\t\t<div class=\"slide-block\">\r\n\t\t\t\t\t\t<a class=\"slide-link\" id=\"slideURL\" href=\"\">\r\n\t\t\t\t\t\t\t<img id=\"slide\" class=\"slide-image\" src=\"" + ___HTML_LOADER_REPLACEMENT_0___ + "\" alt=\"slide\" />\r\n\t\t\t\t\t\t</a>\r\n\t\t\t\t\t\t<div class=\"slider-dots\">\r\n\t\t\t\t\t\t\t<i id=\"dot1\" class=\"fa-solid fa-circle active\"></i>\r\n\t\t\t\t\t\t\t<i id=\"dot2\" class=\"fa-solid fa-circle\"></i>\r\n\t\t\t\t\t\t\t<i id=\"dot3\" class=\"fa-solid fa-circle\"></i>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"cards-block\">\r\n\t\t\t\t\t\t<a class=\"card-item card-item-1\">\r\n\t\t\t\t\t\t\t<p class=\"card-text\">Change<br />old book<br />on new</p>\r\n\t\t\t\t\t\t\t<i class=\"fa-solid fa-arrow-right-long\"></i>\r\n\t\t\t\t\t\t</a>\r\n\t\t\t\t\t\t<a class=\"card-item card-item-2\">\r\n\t\t\t\t\t\t\t<p class=\"card-text\">Top<br />100<br />books<br />2022</p>\r\n\t\t\t\t\t\t\t<i class=\"fa-solid fa-arrow-right-long\"></i>\r\n\t\t\t\t\t\t</a>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\t\t\t<!-- /.container -->\r\n\t\t</main>\r\n\t\t<!-- /.intro -->\r\n\t\t<section class=\"books\">\r\n\t\t\t<div class=\"books__inner\">\r\n\t\t\t\t<ul class=\"books__nav\">\r\n\t\t\t\t\t<li class=\"list-item list-item1\">\r\n\t\t\t\t\t\t<a>Architecture</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item2\">\r\n\t\t\t\t\t\t<a>Art & Fashion</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item3\">\r\n\t\t\t\t\t\t<a>Biography</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item4\">\r\n\t\t\t\t\t\t<a>Business</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item5\">\r\n\t\t\t\t\t\t<a>Crafts & Hobbies</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item6\">\r\n\t\t\t\t\t\t<a>Drama</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item7\">\r\n\t\t\t\t\t\t<a>Fiction</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item8\">\r\n\t\t\t\t\t\t<a>Food & Drink</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item9\">\r\n\t\t\t\t\t\t<a>Health & Wellbeing</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item10\">\r\n\t\t\t\t\t\t<a>History & Politics</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item11\">\r\n\t\t\t\t\t\t<a>Humor</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item12\">\r\n\t\t\t\t\t\t<a>Poetry</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item13\">\r\n\t\t\t\t\t\t<a>Psychology</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item14\">\r\n\t\t\t\t\t\t<a>Science</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item15\">\r\n\t\t\t\t\t\t<a>Technology</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li class=\"list-item list-item16\">\r\n\t\t\t\t\t\t<a>Travel & Maps</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\t<div class=\"container\">\r\n\t\t\t\t\t<div class=\"books-items\">\r\n\t\t\t\t\t\t<div class=\"books__block\"></div>\r\n\t\t\t\t\t\t<div class=\"more-books\">\r\n\t\t\t\t\t\t\t<button class=\"books-more\">Load more</button>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<!-- /.container -->\r\n\t\t\t</div>\r\n\t\t</section>\r\n\t\t<!-- /.books -->\r\n\t</body>\r\n</html>\r\n";
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (code);
 
@@ -11290,6 +11731,188 @@ module.exports = styleTagTransform;
 
 /***/ }),
 
+/***/ "./node_modules/uuid/dist/esm-browser/native.js":
+/*!******************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/native.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+const randomUUID = typeof crypto !== 'undefined' && crypto.randomUUID && crypto.randomUUID.bind(crypto);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  randomUUID
+});
+
+/***/ }),
+
+/***/ "./node_modules/uuid/dist/esm-browser/regex.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/regex.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (/^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i);
+
+/***/ }),
+
+/***/ "./node_modules/uuid/dist/esm-browser/rng.js":
+/*!***************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/rng.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ rng)
+/* harmony export */ });
+// Unique ID creation requires a high quality random # generator. In the browser we therefore
+// require the crypto API and do not support built-in fallback to lower quality random number
+// generators (like Math.random()).
+let getRandomValues;
+const rnds8 = new Uint8Array(16);
+function rng() {
+  // lazy load so that environments that need to polyfill have a chance to do so
+  if (!getRandomValues) {
+    // getRandomValues needs to be invoked in a context where "this" is a Crypto implementation.
+    getRandomValues = typeof crypto !== 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto);
+
+    if (!getRandomValues) {
+      throw new Error('crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported');
+    }
+  }
+
+  return getRandomValues(rnds8);
+}
+
+/***/ }),
+
+/***/ "./node_modules/uuid/dist/esm-browser/stringify.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/stringify.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   unsafeStringify: () => (/* binding */ unsafeStringify)
+/* harmony export */ });
+/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./validate.js */ "./node_modules/uuid/dist/esm-browser/validate.js");
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+
+const byteToHex = [];
+
+for (let i = 0; i < 256; ++i) {
+  byteToHex.push((i + 0x100).toString(16).slice(1));
+}
+
+function unsafeStringify(arr, offset = 0) {
+  // Note: Be careful editing this code!  It's been tuned for performance
+  // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
+  return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+}
+
+function stringify(arr, offset = 0) {
+  const uuid = unsafeStringify(arr, offset); // Consistency check for valid UUID.  If this throws, it's likely due to one
+  // of the following:
+  // - One or more input array values don't map to a hex octet (leading to
+  // "undefined" in the uuid)
+  // - Invalid input values for the RFC `version` or `variant` fields
+
+  if (!(0,_validate_js__WEBPACK_IMPORTED_MODULE_0__["default"])(uuid)) {
+    throw TypeError('Stringified UUID is invalid');
+  }
+
+  return uuid;
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (stringify);
+
+/***/ }),
+
+/***/ "./node_modules/uuid/dist/esm-browser/v4.js":
+/*!**************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/v4.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _native_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./native.js */ "./node_modules/uuid/dist/esm-browser/native.js");
+/* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./rng.js */ "./node_modules/uuid/dist/esm-browser/rng.js");
+/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./stringify.js */ "./node_modules/uuid/dist/esm-browser/stringify.js");
+
+
+
+
+function v4(options, buf, offset) {
+  if (_native_js__WEBPACK_IMPORTED_MODULE_0__["default"].randomUUID && !buf && !options) {
+    return _native_js__WEBPACK_IMPORTED_MODULE_0__["default"].randomUUID();
+  }
+
+  options = options || {};
+  const rnds = options.random || (options.rng || _rng_js__WEBPACK_IMPORTED_MODULE_1__["default"])(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+
+  rnds[6] = rnds[6] & 0x0f | 0x40;
+  rnds[8] = rnds[8] & 0x3f | 0x80; // Copy bytes to buffer, if provided
+
+  if (buf) {
+    offset = offset || 0;
+
+    for (let i = 0; i < 16; ++i) {
+      buf[offset + i] = rnds[i];
+    }
+
+    return buf;
+  }
+
+  return (0,_stringify_js__WEBPACK_IMPORTED_MODULE_2__.unsafeStringify)(rnds);
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (v4);
+
+/***/ }),
+
+/***/ "./node_modules/uuid/dist/esm-browser/validate.js":
+/*!********************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/validate.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _regex_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./regex.js */ "./node_modules/uuid/dist/esm-browser/regex.js");
+
+
+function validate(uuid) {
+  return typeof uuid === 'string' && _regex_js__WEBPACK_IMPORTED_MODULE_0__["default"].test(uuid);
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (validate);
+
+/***/ }),
+
 /***/ "./src/fonts/Montserrat-Black.ttf":
 /*!****************************************!*\
   !*** ./src/fonts/Montserrat-Black.ttf ***!
@@ -11491,4 +12114,4 @@ module.exports = __webpack_require__.p + "assets/banner1.png";
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=main.a0a09717603b33aaaa24.js.map
+//# sourceMappingURL=main.1c863f9d00105131fbaa.js.map

@@ -10,7 +10,9 @@
     },
     "rules": {
         "indent": "off",
-        "max-len": "off"
+        "max-len": "off",
+        "no-tabs": "off",
+        "require-jsdoc": "off"
       }
 }
   

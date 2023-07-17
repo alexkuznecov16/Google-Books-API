@@ -22,7 +22,7 @@ module.exports = {
 		static: {
 			directory: path.resolve(__dirname, 'dist'),
 		},
-		port: 3000,
+		port: 8080,
 		open: true,
 		hot: true,
 	},
@@ -89,7 +89,6 @@ module.exports = {
 		new HtmlWebpackPlugin({
 			template: path.resolve(__dirname, 'src', 'index.html'),
 		}),
-
 		//! ========== css
 		new MiniCssExtractPlugin({
 			filename: '[name].[contenthash].css',

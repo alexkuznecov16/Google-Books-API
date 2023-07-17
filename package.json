@@ -26,6 +26,7 @@
     "eslint-webpack-plugin": "^4.0.1",
     "html-loader": "^4.2.0",
     "html-webpack-plugin": "^5.5.3",
+    "http-server": "^14.1.1",
     "mini-css-extract-plugin": "^2.7.6",
     "postcss": "^8.4.25",
     "postcss-loader": "^7.3.3",
@@ -46,6 +47,7 @@
     "@babel/polyfill": "^7.12.1",
     "node-sass": "^9.0.0",
     "path": "^0.12.7",
-    "postcss-preset-env": "^9.0.0"
+    "postcss-preset-env": "^9.0.0",
+    "uuid": "^9.0.0"
   }
 }
