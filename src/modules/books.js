@@ -1,16 +1,8 @@
-import {v4 as uuidv4} from 'uuid'; // random nums
-let buyButtonID;
-
-let IDsArray = localStorage.getItem('IDsArray');
-if (IDsArray) {
-	IDsArray = JSON.parse(IDsArray);
-} else {
-	IDsArray = [];
-}
-
 const cartItems = document.querySelector('.items-count');
 const menuCart = document.querySelector('.add-menu-bag');
 menuCart.appendChild(cartItems);
+
+const IDsObject = {};
 
 const booksLinks = document.querySelectorAll('.list-item > a');
 booksLinks.forEach((link) => {
@@ -84,16 +76,15 @@ booksLinks.forEach((link) => {
 
 				const buyButton = document.createElement('button');
 				buyButton.setAttribute('class', 'book-buy');
+				buyButton.setAttribute('id', result.items[i].id);
 				buyButton.textContent = 'Buy now';
-				if (!buyButtonID) {
-					buyButtonID = uuidv4(); // random id
-					buyButton.setAttribute('id', buyButtonID);
-				} else {}
 
 				buyButton.addEventListener('click', () => {
-					localStorage.setItem('book', result.items[i]);
+					const itemID = buyButton.getAttribute('id'); // Получаем значение id кнопки
+
+					localStorage.setItem('book', JSON.stringify(result.items[i]));
+
 					if (buyButton.classList.contains('active')) {
-						localStorage.removeItem('btnActiveID');
 						if (parseInt(cartItems.textContent) > 0) {
 							cartItems.textContent = parseInt(cartItems.textContent) - 1;
 							checkCartItems();
@@ -101,22 +92,26 @@ booksLinks.forEach((link) => {
 						localStorage.removeItem('book');
 						localStorage.setItem('bookCount', parseInt(cartItems.textContent));
 						buyButton.classList.remove('active');
-						IDsArray.splice(IDsArray.indexOf(buyButtonID), 1);
-						activeButtonsCheck();
+						delete IDsObject[itemID]; // Удаляем элемент из объекта по ключу
+						localStorage.removeItem('activeButtons');
+						buyButton.removeAttribute('id');
+						localStorage.removeItem('buttonId');
 						buyButton.textContent = 'Buy now';
 					} else {
-						localStorage.setItem('btnActiveID', buyButtonID);
 						cartItems.textContent = parseInt(cartItems.textContent) + 1;
-						localStorage.setItem('book', JSON.stringify(result.items[i]));
 						localStorage.setItem('bookCount', cartItems.textContent);
 						checkCartItems();
 						buyButton.classList.add('active');
-						IDsArray.push(buyButtonID);
-						activeButtonsCheck();
+						IDsObject[itemID] = true; // Добавляем элемент в объект по ключу
+						localStorage.setItem('activeButtons', JSON.stringify(IDsObject));
 						buyButton.textContent = 'In the cart';
+						buyButton.setAttribute('id', itemID);
+						localStorage.setItem('buttonId', JSON.stringify(itemID));
+						checkActiveBtn();
 					}
-					localStorage.setItem('IDsArray', JSON.stringify(IDsArray));
+					checkActiveBtn();
 				});
+				checkActiveBtn();
 
 				function checkCartItems() {
 					if (parseInt(cartItems.textContent) > 0) {
@@ -137,12 +132,12 @@ booksLinks.forEach((link) => {
 				divItem.appendChild(image);
 				divItem.appendChild(divInfo);
 				divBlock.appendChild(divItem);
-
-				console.log(IDsArray);
 			}
+			checkActiveBtn();
 		} catch (error) {
 			console.log(error);
 		}
+		checkActiveBtn();
 	});
 });
 
@@ -209,20 +204,27 @@ window.addEventListener('DOMContentLoaded', () => {
 	}
 });
 
-const activeIDs = localStorage.getItem('btnActiveID') ? localStorage.getItem('btnActiveID').split(',') : [];
+const activeBtns = localStorage.getItem('activeButtons'); // object of IDs
+const IDValue = localStorage.getItem('buttonId'); // id
 
-function activeButtonsCheck() {
-	activeIDs.forEach((id) => {
-		const IDelement = document.getElementById(id);
-		if (IDelement) {
-			if (activeIDs.includes(id)) {
-				IDelement.classList.add('active');
-				console.log(id + ': id, activeIDs : ' + activeIDs);
+function checkActiveBtn() {
+	if (activeBtns && IDValue) {
+		console.log('ID Value:', IDValue);
+		for (const key in activeBtns) {
+			console.log('keys:  ' + key);
+			if (key === IDValue) {
+				const activeButtonElement = document.getElementById(key);
+				activeButtonElement.classList.add('active');
+				console.log('id value: ' + key);
 			} else {
-				IDelement.classList.remove('active');
+				console.log('error');
 			}
 		}
-	});
+	} else {
+		console.log('Error: activeBtns or IDValue is missing');
+		console.log('activeBtns:', JSON.stringify(activeBtns));
+		console.log('IDValue:', JSON.stringify(IDValue));
+	}
 }
 
-activeButtonsCheck();
+checkActiveBtn();
