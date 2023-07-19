@@ -82,14 +82,14 @@ booksLinks.forEach((link) => {
 				buyButton.addEventListener('click', () => {
 					const itemID = buyButton.getAttribute('id'); // Получаем значение id кнопки
 
-					localStorage.setItem('book', JSON.stringify(result.items[i]));
+					localStorage.setItem(itemID, JSON.stringify(result.items[i]));
 
 					if (buyButton.classList.contains('active')) {
 						if (parseInt(cartItems.textContent) > 0) {
 							cartItems.textContent = parseInt(cartItems.textContent) - 1;
 							checkCartItems();
 						}
-						localStorage.removeItem('book');
+						localStorage.removeItem(itemID);
 						localStorage.setItem('bookCount', parseInt(cartItems.textContent));
 						buyButton.classList.remove('active');
 						delete IDsObject[itemID]; // Удаляем элемент из объекта по ключу
@@ -181,21 +181,21 @@ listItems.forEach((item) => {
 	});
 });
 
-const savedBooks = localStorage.getItem('book');
+// const savedBooks = localStorage.getItem('book');
 
-function checkActiveBooksCount() {
-	const savedBookCount = localStorage.getItem('bookCount');
-	if (savedBookCount) {
-		cartItems.textContent = savedBookCount;
-		for (let x = 1; x < parseInt(savedBookCount); x++) {
-			const savedBook = localStorage.getItem(`book${x}`);
-			if (savedBook) {
-				const book = JSON.parse(savedBook);
-				console.log(`${x} : ${book.volumeInfo.id}`);
-			}
-		}
-	}
-}
+// function checkActiveBooksCount() {
+// 	const savedBookCount = localStorage.getItem('bookCount');
+// 	if (savedBookCount) {
+// 		cartItems.textContent = savedBookCount;
+// 		for (let x = 1; x < parseInt(savedBookCount); x++) {
+// 			const savedBook = localStorage.getItem(`book${x}`);
+// 			if (savedBook) {
+// 				const book = JSON.parse(savedBook);
+// 				console.log(`${x} : ${book.volumeInfo.id}`);
+// 			}
+// 		}
+// 	}
+// }
 
 window.addEventListener('DOMContentLoaded', () => {
 	checkActiveBooksCount();
@@ -204,26 +204,27 @@ window.addEventListener('DOMContentLoaded', () => {
 	}
 });
 
-const activeBtns = localStorage.getItem('activeButtons'); // object of IDs
-const IDValue = localStorage.getItem('buttonId'); // id
+const activeBtns = JSON.parse(localStorage.getItem('activeButtons')); // Преобразуем строку обратно в объект
+const IDValue = JSON.parse(localStorage.getItem('buttonId')); // id
 
 function checkActiveBtn() {
-	if (activeBtns && IDValue) {
-		console.log('ID Value:', IDValue);
-		for (const key in activeBtns) {
-			console.log('keys:  ' + key);
+	if (activeBtns) {
+		const keys = Object.keys(activeBtns);
+
+		for (const key of keys) {
 			if (key === IDValue) {
-				const activeButtonElement = document.getElementById(key);
-				activeButtonElement.classList.add('active');
-				console.log('id value: ' + key);
+				// const buttonItem = document.getElementById(key);
+
+				console.log('Good! : ' + IDValue);
+				const btnItem = document.getElementById(IDValue);
+				if (btnItem) {
+					btnItem.textContent = 'In the cart';
+				}
+				// }
 			} else {
-				console.log('error');
+				console.log('Error');
 			}
 		}
-	} else {
-		console.log('Error: activeBtns or IDValue is missing');
-		console.log('activeBtns:', JSON.stringify(activeBtns));
-		console.log('IDValue:', JSON.stringify(IDValue));
 	}
 }
 
