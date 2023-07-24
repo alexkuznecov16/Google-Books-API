@@ -11,7 +11,7 @@
 			<div class="container">
 				<div class="header__inner">
 					<div class="header-logo">Bookshop</div>
-					<nav class="header-nav">
+					<nav class="header-nav desktop">
 						<a class="active" href="#">Books</a>
 						<a href="#">Audiobooks</a>
 						<a href="#">Stationery & gifts</a>
@@ -25,6 +25,15 @@
 							<span class="items-count">0</span>
 						</div>
 					</div>
+					<i class="fa-solid fa-bars"></i>
+					<div class="mobile-menu">
+						<i class="fa-solid fa-xmark"></i>
+						<nav class="header-nav">
+							<a class="active" href="#">Books</a>
+							<a href="#">Audiobooks</a>
+							<a href="#">Stationery & gifts</a>
+							<a href="#">Blog</a>
+						</nav>
 				</div>
 			</div>
 			<!-- /.container -->
@@ -113,12 +122,12 @@
 				<div class="container">
 					<div class="books-items">
 						<div class="books__block"></div>
-						<div class="more-books">
-							<button class="books-more">Load more</button>
-						</div>
 					</div>
 				</div>
 				<!-- /.container -->
+				<div class="more-books">
+					<button id="moreBooks" class="books-more">Load more</button>
+				</div>
 			</div>
 		</section>
 		<!-- /.books -->
