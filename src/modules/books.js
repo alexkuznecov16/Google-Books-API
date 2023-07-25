@@ -73,7 +73,7 @@ booksLinks.forEach((link) => {
 							spanPrice.innerHTML = `${result.items[i].saleInfo.retailPrice.amount} &#36;`;
 						}
 					} else {
-						spanPrice.innerHTML = 'Price not available';
+						spanPrice.innerHTML = '';
 					}
 
 					const buyButton = document.createElement('button');
@@ -93,7 +93,7 @@ booksLinks.forEach((link) => {
 							buyButton.classList.remove('active');
 							buyButton.textContent = 'Buy now';
 							IDsValues.pop(itemID);
-							booksInfo.pop(result);
+							booksInfo.pop(result.items[i]);
 							localStorage.setItem('IDsValues', JSON.stringify(IDsValues));
 							localStorage.setItem('book', JSON.stringify(booksInfo));
 						} else {

@@ -453,6 +453,11 @@ li,ul,ol{
 						color: #FFFFFF;
 						transform: scale(1.060);
 					}
+
+					.book-buy.active{
+						border: .5px solid #5C6A79 !important;
+						color: #5C6A79 !important;
+					}
 				}
 	
 				& .book-item:hover{
