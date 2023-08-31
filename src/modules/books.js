@@ -92,7 +92,7 @@ booksLinks.forEach((link) => {
 							localStorage.setItem('bookCount', parseInt(cartItems.textContent));
 							buyButton.classList.remove('active');
 							buyButton.textContent = 'Buy now';
-							IDsValues.pop(itemID);
+							IDsValues.pop(buyButton.getAttribute('id'));
 							booksInfo.pop(result.items[i]);
 							localStorage.setItem('IDsValues', JSON.stringify(IDsValues));
 							localStorage.setItem('book', JSON.stringify(booksInfo));
